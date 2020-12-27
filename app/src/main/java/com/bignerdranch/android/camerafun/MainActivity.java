@@ -55,8 +55,13 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission is granted. Continue the action or workflow
                     // in your app.
-                    Intent intent = new Intent(Intent.ACTION_PICK,
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    // Method 1)
+//                    Intent intent = new Intent(Intent.ACTION_PICK,
+//                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    // Method 2)
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+
                     startActivityForResult(intent, REQUEST_PHOTO);
                 } else {
                     // Explain to the user that the feature is unavailable because
@@ -80,22 +85,25 @@ public class MainActivity extends AppCompatActivity {
         }
         if (requestCode == REQUEST_PHOTO && data != null) {
             Uri photoSelectUri = data.getData();
-            // Specify which fields you want your query to return values for
-            String[] queryFields = new String[]{MediaStore.Images.Media.DATA};
-            // Perform your query - the contactUri is like a "where" clause here
-            Cursor c = getContentResolver().query(photoSelectUri, queryFields, null, null, null);
-            try {
-                // Double check that you actually got results
-                if (c.getCount() == 0) {
-                    return;
-                }
-                // Pull out the first column of the first row of data - that is your suspect's name
-                c.moveToFirst();
-                String photoPath = c.getString(0);
-                updatePhotoView(photoPath);
-            } finally {
-                c.close();
-            }
+            // Method 1)
+//            // Specify which fields you want your query to return values for
+//            String[] queryFields = new String[]{MediaStore.Images.Media.DATA};
+//            // Perform your query - the contactUri is like a "where" clause here
+//            Cursor c = getContentResolver().query(photoSelectUri, queryFields, null, null, null);
+//            try {
+//                // Double check that you actually got results
+//                if (c.getCount() == 0) {
+//                    return;
+//                }
+//                // Pull out the first column of the first row of data - that is your suspect's name
+//                c.moveToFirst();
+//                String photoPath = c.getString(0);
+//                updatePhotoView(photoPath);
+//            } finally {
+//                c.close();
+//            }
+            // Method 2)
+            mPhotoView.setImageURI(photoSelectUri);
         }
     }
 
