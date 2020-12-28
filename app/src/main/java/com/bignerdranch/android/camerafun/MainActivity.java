@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mPhotoView;
     private Button mAddEffectsButton;
 
+    private String mPhotoPath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
 
         mPhotoView = findViewById(R.id.photo_view);
         mAddEffectsButton = findViewById(R.id.effects_btn);
+        mAddEffectsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, EffectListActivity.class);
+                intent.putExtra("PATH", mPhotoPath);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -56,11 +66,11 @@ public class MainActivity extends AppCompatActivity {
                     // Permission is granted. Continue the action or workflow
                     // in your app.
                     // Method 1)
-//                    Intent intent = new Intent(Intent.ACTION_PICK,
-//                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    // Method 2)
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
+                    Intent intent = new Intent(Intent.ACTION_PICK,
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                    // Method 2)
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    intent.setType("image/*");
 
                     startActivityForResult(intent, REQUEST_PHOTO);
                 } else {
@@ -86,24 +96,24 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_PHOTO && data != null) {
             Uri photoSelectUri = data.getData();
             // Method 1)
-//            // Specify which fields you want your query to return values for
-//            String[] queryFields = new String[]{MediaStore.Images.Media.DATA};
-//            // Perform your query - the contactUri is like a "where" clause here
-//            Cursor c = getContentResolver().query(photoSelectUri, queryFields, null, null, null);
-//            try {
-//                // Double check that you actually got results
-//                if (c.getCount() == 0) {
-//                    return;
-//                }
-//                // Pull out the first column of the first row of data - that is your suspect's name
-//                c.moveToFirst();
-//                String photoPath = c.getString(0);
-//                updatePhotoView(photoPath);
-//            } finally {
-//                c.close();
-//            }
-            // Method 2)
-            mPhotoView.setImageURI(photoSelectUri);
+            // Specify which fields you want your query to return values for
+            String[] queryFields = new String[]{MediaStore.Images.Media.DATA};
+            // Perform your query - the contactUri is like a "where" clause here
+            Cursor c = getContentResolver().query(photoSelectUri, queryFields, null, null, null);
+            try {
+                // Double check that you actually got results
+                if (c.getCount() == 0) {
+                    return;
+                }
+                // Pull out the first column of the first row of data - that is your suspect's name
+                c.moveToFirst();
+                mPhotoPath = c.getString(0);
+                updatePhotoView(mPhotoPath);
+            } finally {
+                c.close();
+            }
+//            // Method 2)
+//            mPhotoView.setImageURI(photoSelectUri);
         }
     }
 
