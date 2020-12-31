@@ -23,6 +23,9 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String PHOTO_PATH = "photo_path";
+    private static final String SELECTED_EFFECT = "selected_effect";
+
     private static final int REQUEST_PHOTO = 0;
     private static final int REQUEST_EFFECT_NUM = 1;
 
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Button mAddEffectsButton;
 
     private String mPhotoPath;
+    private String mSelectedEffectId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +51,23 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mPhotoView = findViewById(R.id.photo_view);
+        if (savedInstanceState != null) {
+            mPhotoPath = savedInstanceState.getString(PHOTO_PATH);
+            updatePhotoView(mPhotoPath);
+
+            mSelectedEffectId = savedInstanceState.getString(SELECTED_EFFECT);
+            if (mSelectedEffectId != null) {
+                updatePhotoView();
+            }
+        }
+
         mAddEffectsButton = findViewById(R.id.effects_btn);
         mAddEffectsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mPhotoPath == null) {
-                    Toast toast = Toast.makeText(MainActivity.this, R.string.photo_select_warning, Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(MainActivity.this, R.string.photo_select_warning
+                            , Toast.LENGTH_SHORT);
                     toast.show();
                     return;
                 }
@@ -120,13 +135,16 @@ public class MainActivity extends AppCompatActivity {
 //            // Method 2)
 //            mPhotoView.setImageURI(photoSelectUri);
         } else if (requestCode == REQUEST_EFFECT_NUM) {
-            String effectUUIDString = EffectListFragment.getEffectUUID(data);
-            EffectLab effectLab = EffectLab.get();
-            Effect effect = effectLab.getEffect(effectUUIDString);
-
-            Bitmap result = effectLab.applyEffect(mPhotoPath, effect);
-            mPhotoView.setImageBitmap(result);
+            mSelectedEffectId = EffectListFragment.getEffectUUID(data);
+            updatePhotoView();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(PHOTO_PATH, mPhotoPath);
+        savedInstanceState.putString(SELECTED_EFFECT, mSelectedEffectId);
     }
 
     private void updatePhotoView(String path) {
@@ -140,5 +158,13 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapFactory.decodeFile(path);
             mPhotoView.setImageBitmap(bitmap);
         }
+    }
+
+    private void updatePhotoView() {
+        EffectLab effectLab = EffectLab.get();
+        Effect effect = effectLab.getEffect(mSelectedEffectId);
+
+        Bitmap result = effectLab.applyEffect(mPhotoPath, effect);
+        mPhotoView.setImageBitmap(result);
     }
 }
