@@ -24,6 +24,7 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_PHOTO = 0;
+    private static final int REQUEST_EFFECT_NUM = 1;
 
     private Button mSelectButton;
     private ImageView mPhotoView;
@@ -50,9 +51,13 @@ public class MainActivity extends AppCompatActivity {
         mAddEffectsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, EffectListActivity.class);
-                intent.putExtra("PATH", mPhotoPath);
-                startActivity(intent);
+                if (mPhotoPath == null) {
+                    Toast toast = Toast.makeText(MainActivity.this, R.string.photo_select_warning, Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
+                Intent intent = EffectListActivity.newIntent(MainActivity.this);
+                startActivityForResult(intent, REQUEST_EFFECT_NUM);
             }
         });
     }
@@ -114,6 +119,13 @@ public class MainActivity extends AppCompatActivity {
             }
 //            // Method 2)
 //            mPhotoView.setImageURI(photoSelectUri);
+        } else if (requestCode == REQUEST_EFFECT_NUM) {
+            String effectUUIDString = EffectListFragment.getEffectUUID(data);
+            EffectLab effectLab = EffectLab.get();
+            Effect effect = effectLab.getEffect(effectUUIDString);
+
+            Bitmap result = effectLab.applyEffect(mPhotoPath, effect);
+            mPhotoView.setImageBitmap(result);
         }
     }
 

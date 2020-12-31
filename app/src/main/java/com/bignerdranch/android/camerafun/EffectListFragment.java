@@ -1,5 +1,7 @@
 package com.bignerdranch.android.camerafun;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.UUID;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,8 +19,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class EffectListFragment extends Fragment {
 
+    private static final String EXTRA_EFFECT_NUM = "com.bignerdranch.android.camerafun.effect_num";
+
     private RecyclerView mEffectRecyclerView;
     private EffectAdapter mAdapter;
+
+    public static EffectListFragment newInstance() {
+        EffectListFragment fragment = new EffectListFragment();
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
@@ -59,7 +74,8 @@ public class EffectListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-
+            // Apply effect to the photo
+            returnResult(mEffect.getId());
         }
     }
 
@@ -88,5 +104,15 @@ public class EffectListFragment extends Fragment {
         public int getItemCount() {
             return mEffects.size();
         }
+    }
+
+    private void returnResult(UUID id) {
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_EFFECT_NUM, id.toString());
+        getActivity().setResult(Activity.RESULT_OK, intent);
+    }
+
+    public static String getEffectUUID(Intent result) {
+        return result.getStringExtra(EXTRA_EFFECT_NUM);
     }
 }

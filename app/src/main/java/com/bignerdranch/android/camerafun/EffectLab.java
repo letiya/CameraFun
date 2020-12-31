@@ -1,6 +1,7 @@
 package com.bignerdranch.android.camerafun;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 
 import java.util.ArrayList;
@@ -43,7 +44,18 @@ public class EffectLab {
         return null;
     }
 
-    public Bitmap applyEffect(Bitmap src, Effect effect) {
+    public Effect getEffect(String id) {
+        for (Effect effect : mEffects) {
+            if (effect.getId().toString().equals(id)) {
+                return effect;
+            }
+        }
+        return null;
+    }
+
+    public Bitmap applyEffect(String photoPath, Effect effect) {
+        Bitmap src = (BitmapFactory.decodeFile(photoPath));
+
         int width = src.getWidth();
         int height = src.getHeight();
 

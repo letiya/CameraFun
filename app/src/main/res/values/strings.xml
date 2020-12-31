@@ -3,4 +3,5 @@
     <string name="photo_select_text">Select a photo</string>
     <string name="add_effects_text">Add effects</string>
     <string name="permission_warning">CameraFun didn\'t have the permissions needed to use this feature. Please grant CameraFun access in your device\'s settings.</string>
+    <string name="photo_select_warning">Please select a photo before adding effects.</string>
 </resources>

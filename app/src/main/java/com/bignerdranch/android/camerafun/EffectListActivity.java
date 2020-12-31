@@ -1,5 +1,7 @@
 package com.bignerdranch.android.camerafun;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -18,8 +20,13 @@ public class EffectListActivity extends AppCompatActivity {
         Fragment fragment = fm.findFragmentById(R.id.fragment_container);
 
         if (fragment == null) {
-            fragment = new EffectListFragment();
+            fragment = EffectListFragment.newInstance();
             fm.beginTransaction().add(R.id.fragment_container, fragment).commit();
         }
+    }
+
+    public static Intent newIntent(Context packageContext) {
+        Intent intent = new Intent(packageContext, EffectListActivity.class);
+        return intent;
     }
 }

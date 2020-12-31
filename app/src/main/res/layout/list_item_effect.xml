@@ -9,6 +9,11 @@
         android:id="@+id/effect_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
         android:text="Effect" />
 
 </LinearLayout>
