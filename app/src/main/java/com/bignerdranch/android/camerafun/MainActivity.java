@@ -12,8 +12,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -22,6 +24,8 @@ import android.widget.Toast;
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
 
     private static final String PHOTO_PATH = "photo_path";
     private static final String SELECTED_EFFECT = "selected_effect";
@@ -164,7 +168,23 @@ public class MainActivity extends AppCompatActivity {
         EffectLab effectLab = EffectLab.get();
         Effect effect = effectLab.getEffect(mSelectedEffectId);
 
-        Bitmap result = effectLab.applyEffect(mPhotoPath, effect);
-        mPhotoView.setImageBitmap(result);
+        new applyEffectTask().execute(mPhotoPath, effect, effectLab);
+        mPhotoView.setImageResource(R.drawable.msg);
+    }
+
+    private class applyEffectTask extends AsyncTask<Object, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(Object... params) {
+            String photoPath = (String) params[0];
+            Effect effect = (Effect) params[1];
+            EffectLab effectLab = (EffectLab) params[2];
+            Log.i(TAG, "Applying effect " + effect.getNumber());
+            return effectLab.applyEffect(photoPath, effect);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            mPhotoView.setImageBitmap(bitmap);
+        }
     }
 }

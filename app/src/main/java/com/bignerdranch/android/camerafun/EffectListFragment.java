@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.UUID;
@@ -76,6 +77,8 @@ public class EffectListFragment extends Fragment {
         public void onClick(View v) {
             // Apply effect to the photo
             returnResult(mEffect.getId());
+            // Go back to previous Activity
+            getActivity().finish();
         }
     }
 
