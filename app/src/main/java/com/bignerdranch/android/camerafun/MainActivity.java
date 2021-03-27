@@ -22,23 +22,26 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
     private static final String PHOTO_PATH = "photo_path";
-    private static final String SELECTED_EFFECT = "selected_effect";
 
     private static final int REQUEST_PHOTO = 0;
-    private static final int REQUEST_EFFECT_NUM = 1;
 
     private Button mSelectButton;
     private ImageView mPhotoView;
-    private Button mAddEffectsButton;
+    private ImageView mEffect1View;
+    private ImageView mEffect2View;
+    private ImageView mEffect3View;
+    private ImageView mEffect4View;
+    private ImageView mEffect5View;
+    private ImageView[] mEffectViews;
 
     private String mPhotoPath;
-    private String mSelectedEffectId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,27 +61,15 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             mPhotoPath = savedInstanceState.getString(PHOTO_PATH);
             updatePhotoView(mPhotoPath);
-
-            mSelectedEffectId = savedInstanceState.getString(SELECTED_EFFECT);
-            if (mSelectedEffectId != null) {
-                updatePhotoView();
-            }
         }
 
-        mAddEffectsButton = findViewById(R.id.effects_btn);
-        mAddEffectsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mPhotoPath == null) {
-                    Toast toast = Toast.makeText(MainActivity.this, R.string.photo_select_warning
-                            , Toast.LENGTH_SHORT);
-                    toast.show();
-                    return;
-                }
-                Intent intent = EffectListActivity.newIntent(MainActivity.this);
-                startActivityForResult(intent, REQUEST_EFFECT_NUM);
-            }
-        });
+        mEffect1View = findViewById(R.id.effect1_view);
+        mEffect2View = findViewById(R.id.effect2_view);
+        mEffect3View = findViewById(R.id.effect3_view);
+        mEffect4View = findViewById(R.id.effect4_view);
+        mEffect5View = findViewById(R.id.effect5_view);
+
+        mEffectViews = new ImageView[] {mEffect1View, mEffect2View, mEffect3View, mEffect4View, mEffect5View};
     }
 
     @Override
@@ -138,9 +129,6 @@ public class MainActivity extends AppCompatActivity {
             }
 //            // Method 2)
 //            mPhotoView.setImageURI(photoSelectUri);
-        } else if (requestCode == REQUEST_EFFECT_NUM) {
-            mSelectedEffectId = EffectListFragment.getEffectUUID(data);
-            updatePhotoView();
         }
     }
 
@@ -148,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putString(PHOTO_PATH, mPhotoPath);
-        savedInstanceState.putString(SELECTED_EFFECT, mSelectedEffectId);
     }
 
     private void updatePhotoView(String path) {
@@ -161,30 +148,43 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Bitmap bitmap = BitmapFactory.decodeFile(path);
             mPhotoView.setImageBitmap(bitmap);
+            mEffect1View.setImageBitmap(bitmap);
+            mEffect2View.setImageBitmap(bitmap);
+            mEffect3View.setImageBitmap(bitmap);
+            mEffect4View.setImageBitmap(bitmap);
+            mEffect5View.setImageBitmap(bitmap);
+            updateEffectPreviews();
         }
     }
 
-    private void updatePhotoView() {
-        EffectLab effectLab = EffectLab.get();
-        Effect effect = effectLab.getEffect(mSelectedEffectId);
-
-        new applyEffectTask().execute(mPhotoPath, effect, effectLab);
-        mPhotoView.setImageResource(R.drawable.msg);
-    }
-
     private class applyEffectTask extends AsyncTask<Object, Void, Bitmap> {
+        private ImageView imageView;
+
         @Override
         protected Bitmap doInBackground(Object... params) {
             String photoPath = (String) params[0];
             Effect effect = (Effect) params[1];
             EffectLab effectLab = (EffectLab) params[2];
+            imageView = (ImageView) params[3];
             Log.i(TAG, "Applying effect " + effect.getNumber());
             return effectLab.applyEffect(photoPath, effect);
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-            mPhotoView.setImageBitmap(bitmap);
+            imageView.setImageBitmap(bitmap);
+        }
+    }
+
+    private void updateEffectPreviews() {
+        // Update effects to effect imageviews
+        EffectLab effectLab = EffectLab.get();
+        List<Effect> effects = effectLab.getEffects();
+        for (int i = 0; i < effects.size(); i++) {
+            Effect effect = effects.get(i);
+            ImageView imageView = mEffectViews[i];
+            new applyEffectTask().execute(mPhotoPath, effect, effectLab, imageView);
+            imageView.setImageResource(R.drawable.msg);
         }
     }
 }
