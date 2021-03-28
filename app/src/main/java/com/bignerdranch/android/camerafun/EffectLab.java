@@ -1,8 +1,8 @@
 package com.bignerdranch.android.camerafun;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,21 +53,22 @@ public class EffectLab {
         return null;
     }
 
-    public Bitmap applyEffect(String photoPath, Effect effect) {
-        Bitmap src = (BitmapFactory.decodeFile(photoPath));
+    public Bitmap applyEffect(Bitmap src, Bitmap resizedSrc, Effect effect) {
+        int newWidth = resizedSrc.getWidth();
+        int newHeight = resizedSrc.getHeight();
 
-        int width = src.getWidth();
-        int height = src.getHeight();
+        int scaleWidth = src.getWidth() / newWidth;
+        int scaleHeight = src.getHeight() / newHeight;
 
         int depth = effect.getDepth();
         double red = effect.getRed();
         double green = effect.getGreen();
         double blue = effect.getBlue();
 
-        Bitmap result = Bitmap.createBitmap(width, height, src.getConfig());
+        Bitmap result = Bitmap.createBitmap(newWidth, newHeight, resizedSrc.getConfig());
 
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
+        for (int i = 0; i < scaleWidth * newWidth; i += scaleWidth) {
+            for (int j = 0; j < scaleHeight * newHeight; j += scaleHeight) {
                 int pixel = src.getPixel(i, j);
                 int pixelAlpha = Color.alpha(pixel);
                 int pixelRed = Color.red(pixel);
@@ -83,9 +84,25 @@ public class EffectLab {
                 pixelBlue += depth * blue;
                 pixelBlue = Math.min(pixelBlue, 255);
 
-                result.setPixel(i, j, Color.argb(pixelAlpha, pixelRed, pixelGreen, pixelBlue));
+                result.setPixel(i / scaleWidth, j / scaleHeight, Color.argb(pixelAlpha, pixelRed, pixelGreen, pixelBlue));
             }
         }
         return result;
+    }
+
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+//        bm.recycle();
+        return resizedBitmap;
     }
 }

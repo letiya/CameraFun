@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String PHOTO_PATH = "photo_path";
 
     private static final int REQUEST_PHOTO = 0;
+    private static final int SCALE_WIDTH = 30;
+    private static final int SCALE_HEIGHT = 30;
 
     private Button mSelectButton;
     private ImageView mPhotoView;
@@ -162,12 +164,13 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Bitmap doInBackground(Object... params) {
-            String photoPath = (String) params[0];
-            Effect effect = (Effect) params[1];
-            EffectLab effectLab = (EffectLab) params[2];
-            imageView = (ImageView) params[3];
+            Bitmap src = (Bitmap) params[0];
+            Bitmap resizedSrc = (Bitmap) params[1];
+            Effect effect = (Effect) params[2];
+            EffectLab effectLab = (EffectLab) params[3];
+            imageView = (ImageView) params[4];
             Log.i(TAG, "Applying effect " + effect.getNumber());
-            return effectLab.applyEffect(photoPath, effect);
+            return effectLab.applyEffect(src, resizedSrc, effect);
         }
 
         @Override
@@ -180,10 +183,16 @@ public class MainActivity extends AppCompatActivity {
         // Update effects to effect imageviews
         EffectLab effectLab = EffectLab.get();
         List<Effect> effects = effectLab.getEffects();
+
+        Bitmap src = BitmapFactory.decodeFile(mPhotoPath);
+        int width = src.getWidth();
+        int height = src.getHeight();
+        Bitmap resizedSrc = effectLab.getResizedBitmap(src, width / SCALE_WIDTH, height / SCALE_HEIGHT);
+
         for (int i = 0; i < effects.size(); i++) {
             Effect effect = effects.get(i);
             ImageView imageView = mEffectViews[i];
-            new applyEffectTask().execute(mPhotoPath, effect, effectLab, imageView);
+            new applyEffectTask().execute(src, resizedSrc, effect, effectLab, imageView);
             imageView.setImageResource(R.drawable.msg);
         }
     }
