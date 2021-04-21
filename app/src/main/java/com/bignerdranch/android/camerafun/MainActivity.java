@@ -8,14 +8,18 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -31,8 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String PHOTO_PATH = "photo_path";
 
     private static final int REQUEST_PHOTO = 0;
-    private static final int SCALE_WIDTH = 30;
-    private static final int SCALE_HEIGHT = 30;
 
     private Button mSelectButton;
     private ImageView mPhotoView;
@@ -149,6 +151,8 @@ public class MainActivity extends AppCompatActivity {
             mPhotoView.setImageDrawable(null);
         } else {
             Bitmap bitmap = BitmapFactory.decodeFile(path);
+            bitmap = modifyOrientation(bitmap, path);
+
             mPhotoView.setImageBitmap(bitmap);
             mEffect1View.setImageBitmap(bitmap);
             mEffect2View.setImageBitmap(bitmap);
@@ -157,6 +161,42 @@ public class MainActivity extends AppCompatActivity {
             mEffect5View.setImageBitmap(bitmap);
             updateEffectPreviews();
         }
+    }
+
+    private Bitmap modifyOrientation(Bitmap bitmap, String imageAbsolutePath) {
+        try {
+            ExifInterface exifInterface = new ExifInterface(imageAbsolutePath);
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    return rotateBitmap(bitmap, 90);
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    return rotateBitmap(bitmap, 180);
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return rotateBitmap(bitmap, 270);
+                case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                    return flip(bitmap, true, false);
+                case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                    return flip(bitmap, false, true);
+                default:
+                    return bitmap;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    private Bitmap rotateBitmap(Bitmap bitmap, int degrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    private Bitmap flip(Bitmap bitmap, boolean horizontal, boolean vertical) {
+        Matrix matrix = new Matrix();
+        matrix.preScale(horizontal ? -1 : 1, vertical ? -1 : 1);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     private class applyEffectTask extends AsyncTask<Object, Void, Bitmap> {
@@ -185,15 +225,46 @@ public class MainActivity extends AppCompatActivity {
         List<Effect> effects = effectLab.getEffects();
 
         Bitmap src = BitmapFactory.decodeFile(mPhotoPath);
-        int width = src.getWidth();
-        int height = src.getHeight();
-        Bitmap resizedSrc = effectLab.getResizedBitmap(src, width / SCALE_WIDTH, height / SCALE_HEIGHT);
+        src = modifyOrientation(src, mPhotoPath);
 
+        int originalPicWidth = src.getWidth(); // pixel
+        int originalPicHeight = src.getHeight(); // pixel
+
+        int effectImageViewWidth = mEffect1View.getWidth(); // pixel
+        int effectImageViewHeight = mEffect1View.getHeight(); // pixel
+        Bitmap resizedSrc = effectLab.getResizedBitmap(src, effectImageViewWidth, effectImageViewHeight);
+        Log.i(TAG, "Resize from (" + originalPicWidth + "," + originalPicHeight + ") to (" + effectImageViewWidth + "," + effectImageViewHeight + ")");
         for (int i = 0; i < effects.size(); i++) {
             Effect effect = effects.get(i);
             ImageView imageView = mEffectViews[i];
             new applyEffectTask().execute(src, resizedSrc, effect, effectLab, imageView);
             imageView.setImageResource(R.drawable.msg);
         }
+    }
+
+    private void convertDpToPixel(int h, int w) {
+        // Convert dp to pixel
+        Resources r = getResources();
+        float pixelH = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                h,
+                r.getDisplayMetrics()
+        );
+        float pixelW = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                w,
+                r.getDisplayMetrics()
+        );
+        Log.i(TAG, "Convert dp (" + h + "," + w + ")" + " to pixel (" + pixelH + "," + pixelW + ")");
+    }
+
+    private float convertPixelsToDp(float px) {
+        // Convert pixel to dp
+        Resources r = getResources();
+        float density = r.getDisplayMetrics().density;
+//        float px = someDpValue * density;
+//        float dp = somePxValue / density;
+        Log.i(TAG, "Convert px (" + px + ")" + " to dp (" + px / density + ")");
+        return px / density;
     }
 }
