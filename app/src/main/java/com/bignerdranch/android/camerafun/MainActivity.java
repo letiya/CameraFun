@@ -68,12 +68,69 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mEffect1View = findViewById(R.id.effect1_view);
+        mEffect1View.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyEffectToPhotoView(mEffect1View, mPhotoPath);
+            }
+        });
+
         mEffect2View = findViewById(R.id.effect2_view);
+        mEffect2View.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyEffectToPhotoView(mEffect2View, mPhotoPath);
+            }
+        });
+
         mEffect3View = findViewById(R.id.effect3_view);
+        mEffect3View.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyEffectToPhotoView(mEffect3View, mPhotoPath);
+            }
+        });
+
         mEffect4View = findViewById(R.id.effect4_view);
+        mEffect4View.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyEffectToPhotoView(mEffect4View, mPhotoPath);
+            }
+        });
+
         mEffect5View = findViewById(R.id.effect5_view);
+        mEffect5View.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyEffectToPhotoView(mEffect5View, mPhotoPath);
+            }
+        });
 
         mEffectViews = new ImageView[] {mEffect1View, mEffect2View, mEffect3View, mEffect4View, mEffect5View};
+    }
+
+    private void applyEffectToPhotoView(ImageView effectView, String photoPath) {
+        int effectNumber = findEffectNumber(effectView);
+        EffectLab effectLab = EffectLab.get();
+        List<Effect> effects = effectLab.getEffects();
+        Effect effect = effects.get(effectNumber);
+
+        Bitmap src = BitmapFactory.decodeFile(photoPath);
+        src = modifyOrientation(src, photoPath);
+        Bitmap resizedSrc = effectLab.getResizedBitmap(src, mPhotoView.getWidth(), mPhotoView.getHeight());
+
+        Bitmap result = effectLab.applyEffect(src, resizedSrc, effect);
+        mPhotoView.setImageBitmap(result);
+    }
+
+    private int findEffectNumber(ImageView imageView) {
+        for (int i = 0; i < mEffectViews.length; i++) {
+            if (mEffectViews[i].equals(imageView)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
