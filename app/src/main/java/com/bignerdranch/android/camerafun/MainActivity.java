@@ -62,10 +62,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mPhotoView = findViewById(R.id.photo_view);
-        if (savedInstanceState != null) {
-            mPhotoPath = savedInstanceState.getString(PHOTO_PATH);
-            updatePhotoView(mPhotoPath);
-        }
 
         mEffect1View = findViewById(R.id.effect1_view);
         mEffect1View.setOnClickListener(new View.OnClickListener() {
@@ -108,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mEffectViews = new ImageView[] {mEffect1View, mEffect2View, mEffect3View, mEffect4View, mEffect5View};
+
+        if (savedInstanceState != null) {
+            mPhotoPath = savedInstanceState.getString(PHOTO_PATH);
+            updatePhotoView(mPhotoPath);
+        }
     }
 
     private void applyEffectToPhotoView(ImageView effectView, String photoPath) {
@@ -287,8 +288,8 @@ public class MainActivity extends AppCompatActivity {
         int originalPicWidth = src.getWidth(); // pixel
         int originalPicHeight = src.getHeight(); // pixel
 
-        int effectImageViewWidth = mEffect1View.getWidth(); // pixel
-        int effectImageViewHeight = mEffect1View.getHeight(); // pixel
+        int effectImageViewWidth = mEffect1View.getLayoutParams().width; // pixel
+        int effectImageViewHeight = mEffect1View.getLayoutParams().height; // pixel
         Bitmap resizedSrc = effectLab.getResizedBitmap(src, effectImageViewWidth, effectImageViewHeight);
         Log.i(TAG, "Resize from (" + originalPicWidth + "," + originalPicHeight + ") to (" + effectImageViewWidth + "," + effectImageViewHeight + ")");
         for (int i = 0; i < effects.size(); i++) {
